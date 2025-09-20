@@ -1,0 +1,273 @@
+@use '@angular/material' as mat;
+@import 'swiper/swiper-bundle.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@include mat.core();
+
+/* ---------- Material palettes (unchanged) ---------- */
+$primary-palette: mat.m2-define-palette(mat.$m2-indigo-palette);
+$accent-palette: mat.m2-define-palette(mat.$m2-pink-palette);
+$warn-palette: mat.m2-define-palette(mat.$m2-red-palette);
+
+/* ---------- Light / Dark theme maps with translucent surface overrides ---------- */
+$light-theme: mat.m2-define-light-theme((
+        color: (
+                primary: $primary-palette,
+                accent: $accent-palette,
+                warn: $warn-palette,
+        ),
+        background: (
+                background: rgba(255,255,255,0.02),
+                surface: rgba(255,255,255,0.03),
+                app-bar: rgba(255,255,255,0.03)
+        )
+));
+
+$dark-theme: mat.m2-define-dark-theme((
+        color: (
+                primary: $primary-palette,
+                accent: $accent-palette,
+                warn: $warn-palette,
+        ),
+        background: (
+                background: rgba(15,23,42,0.45),
+                surface: rgba(15,23,42,0.32),
+                app-bar: rgba(15,23,42,0.36)
+        )
+));
+
+/* Generate Material component themes (light by default) */
+@include mat.all-component-themes($light-theme);
+
+.dark {
+  /* Use component colors for dark mode */
+  @include mat.all-component-colors($dark-theme);
+}
+
+/* ---------- Glass variables (tweakable) ---------- */
+:root {
+  --color-primary: #8b5cf6;
+  --color-secondary: #ec4899;
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-text: #1e293b;
+  --color-text-secondary: #64748b;
+  --transition-normal: 250ms ease-in-out;
+
+  /* glassmorphism tokens */
+  --glass-blur: 10px;
+  --glass-border: rgba(255,255,255,0.12);
+  --glass-surface: rgba(255,255,255,0.06);
+  --glass-surface-2: rgba(255,255,255,0.04);
+  --glass-accent: rgba(139,92,246,0.12); /* purple tint */
+  --glass-shadow: 0 10px 30px rgba(2,6,23,0.22);
+}
+
+.dark {
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+
+  /* dark glass tokens */
+  --glass-blur: 12px;
+  --glass-border: rgba(255,255,255,0.06);
+  --glass-surface: rgba(255,255,255,0.03);
+  --glass-surface-2: rgba(255,255,255,0.02);
+  --glass-accent: rgba(139,92,246,0.08);
+  --glass-shadow: 0 14px 40px rgba(2,6,23,0.55);
+}
+
+/* ---------- Reset + base ---------- */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- Tailwind-friendly utility wrappers (you may keep or drop) ---------- */
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200;
+}
+
+.btn-primary {
+  @apply bg-primary-500 hover:bg-primary-600 text-white shadow-lg hover:shadow-xl;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300;
+}
+
+/* ---------- Glass core mixin / classes ---------- */
+/* reusable glass container */
+.glass {
+  background: linear-gradient(180deg, var(--glass-surface), var(--glass-surface-2));
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  box-shadow: var(--glass-shadow);
+  border-radius: 12px;
+  transition: background 250ms ease, transform 200ms ease, box-shadow 250ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* sheen */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 30%);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* sized variants */
+.glass-sm { border-radius: 10px; padding: 0.5rem; }
+.glass-md { border-radius: 14px; padding: 1rem; }
+.glass-lg { border-radius: 18px; padding: 1.25rem; }
+
+/* accent */
+.glass-accent {
+  background: linear-gradient(180deg, rgba(139,92,246,0.06), rgba(236,72,153,0.02));
+  border: 1px solid rgba(139,92,246,0.12);
+}
+
+/* hover lift */
+.glass:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 50px rgba(2,6,23,0.45);
+}
+
+/* fallback for browsers without backdrop-filter */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    box-shadow: 0 10px 30px rgba(2,6,23,0.35);
+  }
+}
+
+/* ---------- Component styles (converted to glass) ---------- */
+
+.mat-dialog-container {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Card */
+.card {
+  @apply rounded-xl;
+  @extend .glass;
+  padding: 1rem;
+  background-clip: padding-box;
+  color: var(--color-text);
+}
+
+/* Movie card */
+.movie-card {
+  @apply overflow-hidden transition-transform duration-300 cursor-pointer;
+  @extend .glass;
+  padding: 0;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+
+  .poster {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    display: block;
+  }
+
+  .meta {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.02));
+  }
+
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+/* Header / navbar glass */
+.header-glass {
+  @extend .glass;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-radius: 0 0 14px 14px;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/* Loading spinner */
+.loading-spinner {
+  @apply animate-spin rounded-full border-4 border-gray-200;
+  border-top-color: var(--color-primary);
+}
+
+/* initial loader panel — recommended small change to your index.html loader */
+#initial-loader {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(236,72,153,0.06));
+}
+#initial-loader .panel {
+  width: min(520px, 92%); padding: 2rem; border-radius: 16px; text-align: center;
+  backdrop-filter: blur(16px) saturate(130%); -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 60px rgba(2,6,23,0.5);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+}
+
+/* ---------- Scrollbar (light + dark tweak) ---------- */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.dark ::-webkit-scrollbar-thumb { background: #374151; }
+
+/* ---------- Material component overrides (glass friendly) ---------- */
+/* Make core surfaces translucent and apply glass blur for mat-card, toolbar, sidenav */
+.mat-card, .mat-toolbar, .mat-sidenav {
+  background: transparent !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+/* Buttons: subtle glass button variant */
+.btn-glass {
+  @apply inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(6px);
+}
+
+/* Muted text on glass */
+.muted { color: var(--color-text-secondary); opacity: 0.95; }
+
+/* ---------- Performance & accessibility hints (in-code comments) ---------- */
+/* - Use backdrop-filter sparingly (navbars, hero panels, cards). Too many blurred layers -> GPU cost.
+   - For low-end devices consider reducing --glass-blur or using the @supports fallback.
+   - Ensure min contrast: use stronger text (#fff or near-white) over darker glass surfaces in dark mode. */
+
+/* ---------- End of file ---------- */

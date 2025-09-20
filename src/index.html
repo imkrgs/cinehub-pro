@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <title>CineHub Pro - Discover Amazing Movies</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Your ultimate movie discovery platform with personalized recommendations">
+  <meta name="theme-color" content="#8b5cf6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: 'Poppins', sans-serif; }
+    #initial-loader { 
+      position: fixed; inset: 0; z-index: 9999; 
+      background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: white; flex-direction: column;
+    }
+    .loader-spinner {
+      width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid white; border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 1rem;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="min-h-full">
+  <div id="initial-loader">
+    <div class="loader-spinner"></div>
+    <h1 class="text-2xl font-bold mb-2">CineHub Pro</h1>
+    <p class="text-white/80">Loading your movie experience...</p>
+  </div>
+
+  <app-root></app-root>
+
+  <noscript>
+    <div style="position: fixed; inset: 0; background: #1e293b; color: white; display: flex; align-items: center; justify-content: center; flex-direction: column; z-index: 10000;">
+      <h1>JavaScript Required</h1>
+      <p>CineHub Pro requires JavaScript to function properly.</p>
+    </div>
+  </noscript>
+</body>
+</html>
