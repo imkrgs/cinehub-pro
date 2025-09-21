@@ -34,16 +34,16 @@ import { environment } from '@environments/environment';
         </mat-progress-bar>
       }
 
-<!--      @if (showPwaUpdate()) {-->
-<!--        <div class="pwa-update-banner bg-green-600 text-white p-3 text-center">-->
-<!--          <span>🚀 New version available!</span>-->
-<!--          <button -->
-<!--            class="ml-4 px-4 py-1 bg-white text-green-600 rounded"-->
-<!--            (click)="updatePwa()">-->
-<!--            Update Now-->
-<!--          </button>-->
-<!--        </div>-->
-<!--      }-->
+      @if (showPwaUpdate()) {
+        <div class="pwa-update-banner bg-green-600 text-white p-3 text-center">
+          <span>🚀 New version available!</span>
+          <button 
+            class="ml-4 px-4 py-1 bg-white text-green-600 rounded"
+            (click)="updatePwa()">
+            Update Now
+          </button>
+        </div>
+      }
 
       @if (isOffline()) {
         <div class="offline-banner bg-red-600 text-white p-2 text-center">

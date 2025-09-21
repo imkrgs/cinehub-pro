@@ -29,6 +29,11 @@ export const routes: Routes = [
         title: 'Search Movies - CineHub Pro'
       },
       {
+        path: 'collection/:keywordId',
+        loadComponent: () => import('@features/collection-page/collection-page.component').then(m => m.CollectionPageComponent),
+        title: 'Collection - CineHub Pro'
+      },
+      {
         path: 'dashboard',
         canActivate: [authGuard],
         loadComponent: () => import('@features/user-dashboard/user-dashboard.component').then(m => m.UserDashboardComponent),

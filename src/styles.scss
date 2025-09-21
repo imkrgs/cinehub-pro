@@ -66,7 +66,7 @@ $dark-theme: mat.m2-define-dark-theme((
 }
 
 .dark {
-  --color-background: #0f172a;
+  --color-background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
   --color-surface: #1e293b;
   --color-text: #f8fafc;
   --color-text-secondary: #cbd5e1;
@@ -144,7 +144,6 @@ body {
 
 /* hover lift */
 .glass:hover {
-  transform: translateY(-6px);
   box-shadow: 0 18px 50px rgba(2,6,23,0.45);
 }
 
@@ -196,10 +195,6 @@ body {
     flex-direction: column;
     gap: 0.25rem;
     background: linear-gradient(180deg, transparent, rgba(0,0,0,0.02));
-  }
-
-  &:hover {
-    transform: translateY(-8px) scale(1.02);
   }
 }
 

@@ -14,18 +14,17 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { animate, style, transition, trigger, state } from '@angular/animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { Movie } from '@core/models/movie.model';
 import { TmdbService } from '@core/services/tmdb.service';
 import { MovieCardComponent } from '@shared/components/movie-card/movie-card.component';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
 import { ThemeService } from '@core/services/theme.service';
-import {Subscription, fromEvent, forkJoin, of} from 'rxjs';
+import { Subscription, fromEvent, forkJoin, of } from 'rxjs';
 import { debounceTime, catchError } from 'rxjs/operators';
 import { MovieDetailsModalComponent } from '@shared/components/movie-details-modal/movie-details-modal.component';
 import { TrailerPlayerComponent } from '@shared/components/trailer-player/trailer-player.component';
@@ -40,7 +39,6 @@ import { MovieCardSkeletonComponent } from '@shared/components/movie-card-skelet
         RouterLink,
         MatButtonModule,
         MatIconModule,
-        MatTabsModule,
         MatCardModule,
         MatProgressSpinnerModule,
         MatTooltipModule,
@@ -71,7 +69,7 @@ import { MovieCardSkeletonComponent } from '@shared/components/movie-card-skelet
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-    <div class="home-container" [class.dark]="isDarkTheme()">
+    <div class="home-container pt-0.5" [class.dark]="isDarkTheme()">
       <!-- Hero Section with 3D Carousel -->
       <section class="hero-section" #heroSection>
         @if (isLoading.featured()) {
@@ -91,7 +89,7 @@ import { MovieCardSkeletonComponent } from '@shared/components/movie-card-skelet
                     </div>
                     
                     <div class="hero-content">
-                        <div class="container">
+                        <div class="container px-4 py-8">
                             <div class="hero-text" @fadeInUp>
                                 <div class="movie-badge">
                                     <span class="badge-text">Featured</span>
@@ -181,140 +179,39 @@ import { MovieCardSkeletonComponent } from '@shared/components/movie-card-skelet
         <div class="container">
           <h2 class="section-title"><span>Browse by</span> Category</h2>
           <div class="categories-grid">
-            @for (category of categories; track category.id) {
-            <a [routerLink]="['/movies']" [queryParams]="{ genre: category.id }" class="category-card">
+            <a *ngFor="let category of categories" [routerLink]="['/movies']" [queryParams]="{ genre: category.id }" class="category-card">
               <div class="category-icon">
                 <mat-icon>{{ category.icon }}</mat-icon>
               </div>
               <h3>{{ category.name }}</h3>
               <p>{{ getCategoryDescription(category.name) }}</p>
             </a>
-            }
           </div>
         </div>
       </section>
 
-      <!-- Movie Sections -->
+      <!-- Trending Movies (replaces multiple tabs) -->
       <section class="movie-sections">
         <div class="container">
-          <mat-tab-group class="movie-tabs" animationDuration="500ms" [dynamicHeight]="true">
-            <mat-tab label="Popular">
-              <ng-template matTabContent>
-                <div class="tab-content">
-                  <div class="tab-header">
-                      <h3>Most Popular Movies</h3>
-                      <a routerLink="/movies/popular" class="view-all-link">View All <mat-icon>arrow_forward</mat-icon></a>
-                  </div>
-                  @if (isLoading.popular()) {
-                    <div class="movies-grid">
-                      @for (_ of [1,2,3,4,5,6]; track $index) {
-                        <app-movie-card-skeleton></app-movie-card-skeleton>
-                      }
-                    </div>
-                  } @else if (popularMovies().length > 0) {
-                    <div class="movies-grid" @fadeIn>
-                        @for (movie of popularMovies(); track movie.id) {
-                            <app-movie-card [movie]="movie"></app-movie-card>
-                        }
-                    </div>
-                  } @else {
-                    <div class="empty-state">
-                        <mat-icon class="empty-icon">movie_off</mat-icon>
-                        <p>Could not load popular movies.</p>
-                        <button mat-flat-button color="primary" (click)="loadMovies()">Try Again</button>
-                    </div>
-                  }
-                </div>
-              </ng-template>
-            </mat-tab>
+          <div class="tab-content">
+            <div class="tab-header">
+                <h3>Trending Movies</h3>
+                <a routerLink="/movies/trending" class="view-all-link">View All <mat-icon>arrow_forward</mat-icon></a>
+            </div>
 
-            <mat-tab label="Top Rated">
-              <ng-template matTabContent>
-                <div class="tab-content">
-                    <div class="tab-header">
-                        <h3>Highest Rated Movies</h3>
-                        <a routerLink="/movies/top_rated" class="view-all-link">View All <mat-icon>arrow_forward</mat-icon></a>
-                    </div>
-                    @if (isLoading.topRated()) {
-                        <div class="movies-grid">
-                            @for (_ of [1,2,3,4,5,6]; track $index) {
-                            <app-movie-card-skeleton></app-movie-card-skeleton>
-                            }
-                        </div>
-                    } @else if (topRatedMovies().length > 0) {
-                        <div class="movies-grid" @fadeIn>
-                            @for (movie of topRatedMovies(); track movie.id) {
-                                <app-movie-card [movie]="movie"></app-movie-card>
-                            }
-                        </div>
-                    } @else {
-                        <div class="empty-state">
-                          <mat-icon class="empty-icon">error_outline</mat-icon>
-                          <p>Could not load top rated movies.</p>
-                        </div>
-                    }
-                </div>
-              </ng-template>
-            </mat-tab>
+            <div *ngIf="isLoading.trending()" class="movies-grid">
+                <app-movie-card-skeleton *ngFor="let _ of skeletonArray"></app-movie-card-skeleton>
+            </div>
 
-            <mat-tab label="Upcoming">
-              <ng-template matTabContent>
-                <div class="tab-content">
-                    <div class="tab-header">
-                        <h3>Coming Soon to Theaters</h3>
-                        <a routerLink="/movies/upcoming" class="view-all-link">View All <mat-icon>arrow_forward</mat-icon></a>
-                    </div>
-                    @if (isLoading.upcoming()) {
-                        <div class="movies-grid">
-                          @for (_ of [1,2,3,4,5,6]; track $index) {
-                            <app-movie-card-skeleton></app-movie-card-skeleton>
-                          }
-                        </div>
-                    } @else if (upcomingMovies().length > 0) {
-                        <div class="movies-grid" @fadeIn>
-                            @for (movie of upcomingMovies(); track movie.id) {
-                                <app-movie-card [movie]="movie"></app-movie-card>
-                            }
-                        </div>
-                    } @else {
-                      <div class="empty-state">
-                        <mat-icon class="empty-icon">error_outline</mat-icon>
-                        <p>Could not load upcoming movies.</p>
-                      </div>
-                    }
-                </div>
-              </ng-template>
-            </mat-tab>
+            <div *ngIf="!isLoading.trending() && hasError.trending()" class="empty-state">
+                <mat-icon class="empty-icon">error_outline</mat-icon>
+                <p>Could not load trending movies.</p>
+            </div>
 
-            <mat-tab label="Now Playing">
-              <ng-template matTabContent>
-                <div class="tab-content">
-                    <div class="tab-header">
-                        <h3>Currently in Theaters</h3>
-                        <a routerLink="/movies/now_playing" class="view-all-link">View All <mat-icon>arrow_forward</mat-icon></a>
-                    </div>
-                    @if (isLoading.nowPlaying()) {
-                        <div class="movies-grid">
-                            @for (_ of [1,2,3,4,5,6]; track $index) {
-                            <app-movie-card-skeleton></app-movie-card-skeleton>
-                            }
-                        </div>
-                    } @else if (nowPlayingMovies().length > 0) {
-                        <div class="movies-grid" @fadeIn>
-                            @for (movie of nowPlayingMovies(); track movie.id) {
-                                <app-movie-card [movie]="movie"></app-movie-card>
-                            }
-                        </div>
-                    } @else {
-                      <div class="empty-state">
-                        <mat-icon class="empty-icon">error_outline</mat-icon>
-                        <p>Could not load movies playing now.</p>
-                      </div>
-                    }
-                </div>
-              </ng-template>
-            </mat-tab>
-          </mat-tab-group>
+            <div *ngIf="!isLoading.trending() && trendingMovies().length > 0" class="movies-grid" @fadeIn>
+                <app-movie-card *ngFor="let movie of trendingMovies()" [movie]="movie"></app-movie-card>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -323,8 +220,7 @@ import { MovieCardSkeletonComponent } from '@shared/components/movie-card-skelet
         <div class="container">
           <h2 class="section-title"><span>Featured</span> Collections</h2>
           <div class="collections-grid">
-            @for (collection of collections; track collection.title) {
-            <div class="collection-card">
+            <div *ngFor="let collection of collections" class="collection-card">
               <div class="collection-image" [style.background-image]="'url(' + collection.image + ')'"></div>
               <div class="collection-overlay">
                 <h3>{{ collection.title }}</h3>
@@ -334,7 +230,6 @@ import { MovieCardSkeletonComponent } from '@shared/components/movie-card-skelet
                 </button>
               </div>
             </div>
-            }
           </div>
         </div>
       </section>
@@ -343,15 +238,13 @@ import { MovieCardSkeletonComponent } from '@shared/components/movie-card-skelet
       <section class="stats-section" (appIntersecting)="onStatsVisible($event)" @fadeIn>
         <div class="container">
           <div class="stats-grid">
-            @for(stat of animatedStats(); track stat.label) {
-            <div class="stat-item">
+            <div *ngFor="let stat of animatedStats()" class="stat-item">
               <div class="stat-icon">
                 <mat-icon>{{ stat.icon }}</mat-icon>
               </div>
               <div class="stat-number">{{ stat.value | number: '1.0-0' }}{{ stat.plus ? '+' : '' }}</div>
               <div class="stat-label">{{ stat.label }}</div>
             </div>
-            }
           </div>
         </div>
       </section>
@@ -667,25 +560,16 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Movie Data Signals
     readonly featuredMovies = signal<Movie[]>([]);
-    readonly popularMovies = signal<Movie[]>([]);
-    readonly topRatedMovies = signal<Movie[]>([]);
-    readonly upcomingMovies = signal<Movie[]>([]);
-    readonly nowPlayingMovies = signal<Movie[]>([]);
+    readonly trendingMovies = signal<Movie[]>([]);
 
-    // Loading and Error State Signals
+    // Loading and Error State Signals (only what's needed)
     readonly isLoading = {
         featured: signal(true),
-        popular: signal(true),
-        topRated: signal(true),
-        upcoming: signal(true),
-        nowPlaying: signal(true)
+        trending: signal(true)
     };
     readonly hasError = {
         featured: signal(false),
-        popular: signal(false),
-        topRated: signal(false),
-        upcoming: signal(false),
-        nowPlaying: signal(false)
+        trending: signal(false)
     };
 
     // Stats Animation Signals
@@ -700,27 +584,29 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     readonly categories = [
         { id: 28, name: 'Action', icon: 'local_fire_department' },
         { id: 35, name: 'Comedy', icon: 'sentiment_very_satisfied' },
-        { id: 18, name: 'Drama', icon: 'theater_comedy' },
         { id: 27, name: 'Horror', icon: 'mood_bad' },
         { id: 10749, name: 'Romance', icon: 'favorite' },
         { id: 878, name: 'Sci-Fi', icon: 'rocket_launch' }
     ];
 
     readonly collections = [
-        { title: 'Marvel Cinematic Universe', description: 'The epic superhero franchise', image: '/assets/images/collection-marvel.jpg', route: '/collection/marvel' },
-        { title: 'Oscar Winners', description: 'Academy Award winning films', image: '/assets/images/collection-oscars.jpg', route: '/collection/oscars' },
-        { title: 'Animated Classics', description: 'Timeless animated masterpieces', image: '/assets/images/collection-animation.jpg', route: '/collection/animation' }
+        { id: 180547, title: 'Marvel Cinematic Universe', description: 'The epic superhero franchise', image: '/assets/images/collection-marvel.jpg', route: '/collection/180547' },
+        { id: 180547, title: 'Oscar Winners', description: 'Academy Award winning films', image: '/assets/images/collection-oscars.jpg', route: '/collection/oscars' },
+        { id: 180547, title: 'Animated Classics', description: 'Timeless animated masterpieces', image: '/assets/images/collection-animation.jpg', route: '/collection/animation' }
     ];
 
     private readonly statsArray = [
-        { icon: 'movie', value: 25000, plus: true, label: 'Movies' },
-        { icon: 'people', value: 1000000, plus: true, label: 'Users' },
-        { icon: 'rate_review', value: 5000000, plus: true, label: 'Reviews' },
+        { icon: 'movie', value: 2500, plus: true, label: 'Movies' },
+        { icon: 'people', value: 100000, plus: true, label: 'Users' },
+        { icon: 'rate_review', value: 500000, plus: true, label: 'Reviews' },
         { icon: 'public', value: 180, plus: false, label: 'Countries' }
     ];
 
+    // small helper for skeleton rendering
+    readonly skeletonArray = Array.from({ length: 8 });
+
     constructor() {
-        //add subscriptions
+        // intentionally empty for now
     }
 
     ngOnInit(): void {
@@ -738,41 +624,29 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     protected loadMovies(): void {
-        const movieRequests = {
+        // fetch hero (featured = popular) and trending (single call)
+        const requests = {
             featured: this.tmdbService.getMovies('popular', 1).pipe(catchError(() => of(null))),
-            popular: this.tmdbService.getMovies('popular', 1).pipe(catchError(() => of(null))),
-            topRated: this.tmdbService.getMovies('top_rated', 1).pipe(catchError(() => of(null))),
-            upcoming: this.tmdbService.getMovies('upcoming', 1).pipe(catchError(() => of(null))),
-            nowPlaying: this.tmdbService.getMovies('now_playing', 1).pipe(catchError(() => of(null)))
+            trending: this.tmdbService.getTrendingMovies('day', 1).pipe(catchError(() => of(null))),
         };
 
-        forkJoin(movieRequests).subscribe(results => {
-            // Featured Movies
+        forkJoin(requests).subscribe(results => {
+            // Featured / Hero
             if (results.featured) {
-                this.featuredMovies.set(results.featured.results.slice(0, 5));
+                this.featuredMovies.set(results.featured.results);
                 this.startAutoPlay();
-            } else { this.hasError.featured.set(true); }
+            } else {
+                this.hasError.featured.set(true);
+            }
             this.isLoading.featured.set(false);
 
-            // Popular Movies
-            if (results.popular) { this.popularMovies.set(results.popular.results.slice(0, 12)); }
-            else { this.hasError.popular.set(true); }
-            this.isLoading.popular.set(false);
-
-            // Top Rated Movies
-            if (results.topRated) { this.topRatedMovies.set(results.topRated.results.slice(0, 12)); }
-            else { this.hasError.topRated.set(true); }
-            this.isLoading.topRated.set(false);
-
-            // Upcoming Movies
-            if (results.upcoming) { this.upcomingMovies.set(results.upcoming.results.slice(0, 12)); }
-            else { this.hasError.upcoming.set(true); }
-            this.isLoading.upcoming.set(false);
-
-            // Now Playing Movies
-            if (results.nowPlaying) { this.nowPlayingMovies.set(results.nowPlaying.results.slice(0, 12)); }
-            else { this.hasError.nowPlaying.set(true); }
-            this.isLoading.nowPlaying.set(false);
+            // Trending
+            if (results.trending) {
+                this.trendingMovies.set(results.trending.results.slice(0, 20));
+            } else {
+                this.hasError.trending.set(true);
+            }
+            this.isLoading.trending.set(false);
 
             this.cdr.markForCheck();
         });
@@ -795,12 +669,14 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     nextSlide(isAutoplay: boolean = false): void {
-        this.currentSlide.update(slide => (slide + 1) % this.featuredMovies().length);
+        const total = this.featuredMovies().length || 1;
+        this.currentSlide.update(slide => (slide + 1) % total);
         if (!isAutoplay) this.resetAutoPlay(); else this.startProgressBar();
     }
 
     previousSlide(): void {
-        this.currentSlide.update(slide => (slide === 0 ? this.featuredMovies().length - 1 : slide - 1));
+        const total = this.featuredMovies().length || 1;
+        this.currentSlide.update(slide => (slide === 0 ? total - 1 : slide - 1));
         this.resetAutoPlay();
     }
 
@@ -821,9 +697,15 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
         const current = this.currentSlide();
         const total = this.featuredMovies().length;
         if (index === current) return 'active';
+        if (total === 0) return '';
         if (index === (current - 1 + total) % total) return 'prev';
         if (index === (current + 1) % total) return 'next';
         return '';
+    }
+
+    // simple trackBy for ngFor
+    trackByMovieId(_: number, item: Movie) {
+        return item?.id;
     }
 
     getBackdropUrl = (path: string | null): string => path ? `https://image.tmdb.org/t/p/w1920_and_h800_multi_faces${path}` : '/assets/images/placeholder-backdrop.jpg';
@@ -841,7 +723,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
     addToWatchlist(movie: Movie): void {
         console.log('Added to watchlist:', movie.title); // Placeholder
-        // Example: this.watchlistService.add(movie.id);
     }
 
     playTrailer(movie: Movie): void {
@@ -879,7 +760,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
                 const statToUpdate = this.statsArray.find(s => s.label === stat.label);
                 if (statToUpdate) {
                     statToUpdate.value = Math.ceil(current);
-                    this.cdr.markForCheck(); // Manually trigger change detection for animation
+                    this.cdr.markForCheck();
                 }
             }, stepTime);
         });

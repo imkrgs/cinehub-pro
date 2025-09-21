@@ -309,13 +309,13 @@ import { MovieCardComponent } from '@shared/components/movie-card/movie-card.com
           </mat-tab-group>
         </div>
 
-        <!-- Similar Movies -->
-        @if (movie()!.similar?.results?.length) {
+        <!-- Recommendation Movies -->
+        @if (movie()!.recommendations?.results?.length) {
           <div>
-            <h2 class="text-2xl font-bold mb-6">Similar Movies</h2>
+            <h2 class="text-2xl font-bold mb-6">Recommended Movies</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              @for (similarMovie of movie()!.similar!.results.slice(0, 10); track similarMovie.id) {
-                <app-movie-card [movie]="similarMovie"></app-movie-card>
+              @for (recommendedMovie of movie()!.recommendations!.results.slice(0, 10); track recommendedMovie.id) {
+                <app-movie-card [movie]="recommendedMovie"></app-movie-card>
               }
             </div>
           </div>

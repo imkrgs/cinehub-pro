@@ -49,14 +49,23 @@ import { take } from 'rxjs/operators';
         </div>
 
         <!-- Poster with fade-in effect -->
-        <img
-          class="poster"
-          [class.loaded]="posterLoaded()"
-          [src]="posterUrl()"
-          [alt]="movie.title + ' poster'"
-          (load)="onPosterLoad()"
-          (error)="onImageError($event)"
-          loading="lazy" />
+        <ng-container *ngIf="movie.poster_path; else placeholder">
+          <img
+              class="poster"
+              [class.loaded]="posterLoaded()"
+              [src]="posterUrl()"
+              [alt]="movie.title + ' poster'"
+              (load)="onPosterLoad()"
+              (error)="onImageError($event)"
+              loading="lazy" />
+        </ng-container>
+
+        <ng-template #placeholder>
+          <div class="placeholder-icon">
+            <mat-icon aria-hidden="true">image_not_supported</mat-icon>
+          </div>
+        </ng-template>
+
 
         <!-- Top badges container -->
         <div class="absolute top-3 left-3 right-3 z-20 flex justify-between items-start">
@@ -129,16 +138,11 @@ import { take } from 'rxjs/operators';
       border-radius: 16px;
       overflow: hidden;
       position: relative;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       background: rgba(18, 18, 24, 0.8);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .movie-card:hover { 
-      transform: translateY(-8px) scale(1.02);
     }
 
     /* Skeleton loader */
@@ -151,7 +155,7 @@ import { take } from 'rxjs/operators';
       background: linear-gradient(110deg, rgba(32, 32, 40, 0.5) 8%, rgba(45, 45, 55, 0.5) 18%, rgba(32, 32, 40, 0.5) 33%);
       background-size: 200% 100%;
       animation: 1.5s shine linear infinite;
-      z-index: 5;
+      z-index: 10;
     }
 
     @keyframes shine {
@@ -167,14 +171,11 @@ import { take } from 'rxjs/operators';
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: scale(1.02);
       opacity: 0;
-      transition: opacity 0.5s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
     
     .poster.loaded {
       opacity: 1;
-      transform: scale(1);
     }
 
     /* Badges */
@@ -200,6 +201,21 @@ import { take } from 'rxjs/operators';
       color: white;
     }
 
+    .placeholder-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(32, 32, 40, 0.6);
+    }
+
+    .placeholder-icon mat-icon {
+      font-size: 48px;   /* control icon size */
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+
     /* Action overlay */
     .action-overlay-container {
       position: absolute;
@@ -209,7 +225,6 @@ import { take } from 'rxjs/operators';
       justify-content: center;
       background: rgba(0, 0, 0, 0.6);
       opacity: 0;
-      transition: opacity 0.3s ease;
       z-index: 10;
     }
 
@@ -413,7 +428,6 @@ export class MovieCardComponent {
   }
 
   onImageError(event: any): void {
-    event.target.src = '/assets/images/placeholder-poster.jpg';
     this.posterLoaded.set(true);
   }
 }

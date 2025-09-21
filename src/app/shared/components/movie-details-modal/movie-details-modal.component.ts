@@ -27,9 +27,6 @@ import { RouterLink } from '@angular/router';
     <div class="movie-details-modal-container">
       <div class="modal-header">
         <h2 mat-dialog-title>{{ movie.title }}</h2>
-        <button mat-icon-button class="close-button" (click)="close()" matTooltip="Close">
-          <mat-icon>close</mat-icon>
-        </button>
       </div>
       
       <mat-dialog-content class="modal-content">
@@ -76,7 +73,7 @@ import { RouterLink } from '@angular/router';
       </mat-dialog-content>
 
       <mat-dialog-actions class="modal-actions" align="end">
-        <button mat-stroked-button (click)="close()">Close</button>
+        <button mat-stroked-button color="warn" (click)="close()">Close</button>
         <button mat-flat-button color="primary" [routerLink]="['/movie', movie.id]" (click)="close()">
           <mat-icon>open_in_new</mat-icon>
           View Full Details
@@ -94,7 +91,7 @@ import { RouterLink } from '@angular/router';
       justify-content: space-between;
       align-items: center;
       padding: 1rem 1.5rem;
-      background-color: var(--bg-color-alt);
+      background-color: transparent;
       border-bottom: 1px solid var(--border-color);
     }
     .modal-header h2 { margin: 0; font-size: 1.5rem; }

@@ -171,3 +171,46 @@ export interface MovieRating {
   rating: number;
   created_at: Date;
 }
+
+export interface MovieFilters {
+  // Search / query
+  query?: string;
+
+  // Basic discover options
+  genre_ids?: number[];            // with_genres
+  year?: number;                   // year (single)
+  release_date_gte?: string;       // YYYY-MM-DD
+  release_date_lte?: string;       // YYYY-MM-DD
+
+  // Runtime
+  runtime_gte?: number;            // with_runtime.gte
+  runtime_lte?: number;            // with_runtime.lte
+
+  // Rating / votes
+  min_rating?: number;             // vote_average.gte
+  max_rating?: number;             // vote_average.lte
+  min_votes?: number;              // vote_count.gte
+
+  // Language / adult
+  language?: string;               // with_original_language
+  include_adult?: boolean;         // include_adult
+
+  // Companies / keywords (comma-separated IDs when sent to TMDB)
+  with_companies?: number[];       // with_companies
+  with_keywords?: number[];        // with_keywords
+
+  // Other discover flags
+  has_video?: boolean;             // with_video
+  sort_by?: string;                // sort_by (popularity.desc, vote_average.desc, etc.)
+  page?: number;                   // pagination
+
+  // Client-side extras (optional)
+  budget_gte?: number;
+  budget_lte?: number;
+  revenue_gte?: number;
+  revenue_lte?: number;
+  production_country?: string;     // iso_3166_1
+  tagline_contains?: string;
+  has_poster?: boolean;
+  spoken_language?: string;        // iso_639_1
+}

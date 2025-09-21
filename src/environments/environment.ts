@@ -35,7 +35,7 @@ export const environment = {
     enableAdminDashboard: true,
     enableDarkMode: true,
     enableAnimations: true,
-    enableAdultContent: false
+    enableAdultContent: true
   },
 
   cache: {
