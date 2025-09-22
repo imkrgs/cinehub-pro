@@ -1,0 +1,58 @@
+<section class="py-12 px-4">
+  <div class="container mx-auto">
+    <h2 class="text-3xl font-bold mb-8 text-center">Contact Us</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="glass rounded-xl p-8">
+        <h3 class="text-2xl font-bold mb-6">Get in Touch</h3>
+        <form class="space-y-6" (submit)="$event.preventDefault(); submit();">
+          <div>
+            <label class="block text-gray-300 mb-2">Your Name</label>
+            <input [(ngModel)]="name" name="name" type="text" class="form-input w-full px-4 py-3 rounded-lg" placeholder="John Doe">
+          </div>
+          <div>
+            <label class="block text-gray-300 mb-2">Email Address</label>
+            <input [(ngModel)]="email" name="email" type="email" class="form-input w-full px-4 py-3 rounded-lg" placeholder="john@example.com">
+          </div>
+          <div>
+            <label class="block text-gray-300 mb-2">Subject</label>
+            <input [(ngModel)]="subject" name="subject" type="text" class="form-input w-full px-4 py-3 rounded-lg" placeholder="How can we help?">
+          </div>
+          <div>
+            <label class="block text-gray-300 mb-2">Your Message</label>
+            <textarea [(ngModel)]="message" name="message" rows="5" class="form-input w-full px-4 py-3 rounded-lg" placeholder="Type your message here..."></textarea>
+          </div>
+          <button type="submit" class="btn-primary w-full py-3 rounded-lg font-medium">Send Message</button>
+        </form>
+      </div>
+
+      <div class="glass rounded-xl p-8">
+        <h3 class="text-2xl font-bold mb-6">Contact Information</h3>
+        <div class="space-y-6">
+          <div class="flex items-start">
+            <div class="bg-primary/20 w-10 h-10 rounded-full flex items-center justify-center mr-4 mt-1">📍</div>
+            <div>
+              <h4 class="font-bold mb-1">Address</h4>
+              <p class="text-gray-300">123 Movie Lane, Cinema City</p>
+              <p class="text-gray-300">CA 90210, United States</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="bg-primary/20 w-10 h-10 rounded-full flex items-center justify-center mr-4 mt-1">📞</div>
+            <div>
+              <h4 class="font-bold mb-1">Phone</h4>
+              <p class="text-gray-300">+1 (555) 123-4567</p>
+              <p class="text-gray-300">+1 (555) 987-6543</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="bg-primary/20 w-10 h-10 rounded-full flex items-center justify-center mr-4 mt-1">📧</div>
+            <div>
+              <h4 class="font-bold mb-1">Email</h4>
+              <p class="text-gray-300">support&#64;cinehub.com</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

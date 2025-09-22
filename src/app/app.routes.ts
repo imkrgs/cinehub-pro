@@ -38,7 +38,15 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () => import('@features/user-dashboard/user-dashboard.component').then(m => m.UserDashboardComponent),
         title: 'Dashboard - CineHub Pro'
-      }
+      },
+      { path: 'about',
+        loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent),
+        title: 'About CineHub Pro'
+      },
+      { path: 'contact',
+        loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent) ,
+        title: 'Contact Us - CineHub Pro'
+      },
     ]
   },
   {
