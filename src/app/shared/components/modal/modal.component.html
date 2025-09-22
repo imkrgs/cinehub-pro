@@ -1,0 +1,102 @@
+<!-- Modal overlay -->
+<div *ngIf="isOpen()" class="ch-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ch-modal-title">
+    <div class="ch-modal-card" role="document">
+        <header class="ch-modal-header">
+            <h2 id="ch-modal-title" class="ch-modal-title">
+                {{ activeForm() === 'signin' ? 'Sign In' : activeForm() === 'signup' ? 'Create Account' : 'Reset Password' }}
+            </h2>
+            <button class="ch-close-btn" aria-label="Close" (click)="close()">✕</button>
+        </header>
+
+        <section class="ch-modal-body">
+            <!-- SIGN IN -->
+            <form *ngIf="activeForm() === 'signin'" [formGroup]="loginForm" (ngSubmit)="submitLogin()" class="ch-form">
+                <label class="ch-label">Email
+                    <input class="ch-input" formControlName="email" type="email" placeholder="you@example.com" />
+                </label>
+                <div *ngIf="lf.email.touched && lf.email.invalid" class="ch-error">
+                    <div *ngIf="lf.email.errors?.['required']">Email is required</div>
+                    <div *ngIf="lf.email.errors?.['email']">Enter a valid email</div>
+                </div>
+
+                <label class="ch-label">Password
+                    <input class="ch-input" formControlName="password" type="password" placeholder="••••••••" />
+                </label>
+                <div *ngIf="lf.password.touched && lf.password.invalid" class="ch-error">
+                    <div *ngIf="lf.password.errors?.['required']">Password is required</div>
+                </div>
+
+                <button class="ch-btn ch-btn-primary" type="submit" [disabled]="loginForm.invalid || isLoading()">
+                    <span *ngIf="!isLoading()">Sign In</span>
+                    <span *ngIf="isLoading()">Signing in…</span>
+                </button>
+
+                <div class="ch-form-footer">
+                    <button type="button" class="ch-link" (click)="openReset()">Forgot password?</button>
+                    <button type="button" class="ch-link" (click)="openSignup()">Create account</button>
+                </div>
+            </form>
+
+            <!-- SIGN UP -->
+            <form *ngIf="activeForm() === 'signup'" [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="ch-form">
+                <label class="ch-label">Full name
+                    <input class="ch-input" formControlName="name" type="text" />
+                </label>
+
+                <label class="ch-label">Username
+                    <input class="ch-input" formControlName="username" type="text" />
+                </label>
+
+                <label class="ch-label">Email
+                    <input class="ch-input" formControlName="email" type="email" />
+                </label>
+
+                <label class="ch-label">Password
+                    <input class="ch-input" formControlName="password" type="password" />
+                </label>
+
+                <label class="ch-label">Confirm Password
+                    <input class="ch-input" formControlName="confirm_password" type="password" />
+                </label>
+                <div *ngIf="registerForm.errors?.['passwordsMismatch']" class="ch-error">Passwords do not match</div>
+
+                <label class="ch-checkbox">
+                    <input type="checkbox" formControlName="accept_terms" />
+                    <span>I agree to the terms and privacy policy</span>
+                </label>
+
+                <label class="ch-checkbox">
+                    <input type="checkbox" formControlName="newsletter_opt_in" />
+                    <span>Subscribe to newsletter</span>
+                </label>
+
+                <button class="ch-btn ch-btn-primary" type="submit" [disabled]="registerForm.invalid || isLoading()">
+                    <span *ngIf="!isLoading()">Create Account</span>
+                    <span *ngIf="isLoading()">Creating…</span>
+                </button>
+
+                <div class="ch-form-footer">
+                    Already have an account?
+                    <button type="button" class="ch-link" (click)="openSignin()">Sign in</button>
+                </div>
+            </form>
+
+            <!-- RESET -->
+            <form *ngIf="activeForm() === 'reset'" [formGroup]="resetForm" (ngSubmit)="submitReset()" class="ch-form">
+                <label class="ch-label">Email
+                    <input class="ch-input" formControlName="email" type="email" />
+                </label>
+
+                <button class="ch-btn ch-btn-primary" type="submit" [disabled]="resetForm.invalid || isLoading()">
+                    <span *ngIf="!isLoading()">Send reset link</span>
+                    <span *ngIf="isLoading()">Sending…</span>
+                </button>
+
+                <div class="ch-form-footer">
+                    Remembered your password?
+                    <button type="button" class="ch-link" (click)="openSignin()">Sign in</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

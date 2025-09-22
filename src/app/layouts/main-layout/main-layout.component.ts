@@ -7,11 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { filter } from 'rxjs';
-
-import { HeaderComponent } from '@shared/components/header/header.component';
 import { FooterComponent } from '@shared/components/footer/footer.component';
 import { AuthService } from '@core/services/auth.service';
 import { ThemeService } from '@core/services/theme.service';
+import {NavbarComponent} from "@shared/components/navbar/navbar.component";
+import {ModalComponent} from "@shared/components/modal/modal.component";
 
 @Component({
   selector: 'app-main-layout',
@@ -19,23 +19,25 @@ import { ThemeService } from '@core/services/theme.service';
   imports: [
     CommonModule,
     RouterOutlet,
-    HeaderComponent,
     FooterComponent,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
-    MatBadgeModule
+    MatBadgeModule,
+    NavbarComponent,
+    ModalComponent
   ],
   template: `
     <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      <app-header></app-header>
+      <app-navbar></app-navbar>
 
       <main class="flex-1 container mx-auto">
         <router-outlet></router-outlet>
       </main>
 
       <app-footer></app-footer>
+      <app-modal></app-modal>
     </div>
   `,
   styles: [`

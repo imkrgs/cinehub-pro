@@ -201,7 +201,7 @@ import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/load
 
               <!-- Release Status Dropdown -->
               <div class="filter-item">
-                <label class="filter-label">Status</label>
+                <label class="filter-label">Release Status</label>
                 <div class="custom-dropdown" [class.open]="statusOpen" (click)="$event.stopPropagation()">
                   <button class="dropdown-toggle" type="button" (click)="toggleStatus($event)"
                           [attr.aria-expanded]="statusOpen" [attr.aria-controls]="'status-panel'">
@@ -398,9 +398,12 @@ import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/load
         <div class="page-size-selector">
           <label>
             <span>Per page:</span>
-              <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange($event)" aria-label="Results per page">
-                  <option *ngFor="let size of [20, 40, 60, 100]" [ngValue]="size">{{ size }}</option>
-              </select>
+            <select (change)="onPageSizeChange($event)" [value]="pageSize" aria-label="Results per page">
+              <option [value]="20">20</option>
+              <option [value]="40">40</option>
+              <option [value]="60">60</option>
+              <option [value]="100">100</option>
+            </select>
           </label>
         </div>
       </footer>
@@ -415,22 +418,21 @@ import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/load
     color: #e2e8f0;
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
     min-height: 100vh;
-    border-radius: 10px;
   }
 
   .movies-root { max-width: 1400px; margin: 0 auto; padding-bottom: 40px; }
 
   .svg-icon { width: 18px; height: 18px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
 
-  .hero-section { padding: 80px 20px 40px; text-align: center; margin-bottom: 0; }
+  .hero-section { padding: 80px 20px 40px; text-align: center; background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); margin-bottom: 0; }
   .hero-content { max-width: 800px; margin: 0 auto; }
   .hero-title { font-size: 3.5rem; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); font-weight: 700; background: linear-gradient(90deg,#fff,#f8fafc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
   .hero-subtitle { font-size: 1.3rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
 
   /* Sticky Filter Bar */
   .filter-bar {
-    position: relative; top: 0; border-radius: 10px;
-    box-shadow: 0 4px 32px rgba(0,0,0,0.3); z-index: 100; padding: 20px 0; transition: all 0.3s ease;
+    position: relative; top: 0; background: rgba(15,23,42,0.95); backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 32px rgba(0,0,0,0.3); z-index: 100; padding: 20px 0; transition: all 0.3s ease;
   }
   .filter-bar.compact { padding: 12px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.4); }
 
@@ -558,7 +560,7 @@ import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/load
   .movie-tile { animation: fadeInUp 0.5s ease-out forwards; opacity:0; }
   @keyframes fadeInUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
 
-  .pagination-footer { backdrop-filter: blur(20px); border:1px solid rgba(255,255,255,0.1); padding:20px; margin:40px 20px 20px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .pagination-footer { background: rgba(15,23,42,0.8); backdrop-filter: blur(20px); border-top:1px solid rgba(255,255,255,0.1); padding:20px; margin:40px 20px 20px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
   .pagination-info { color:#94a3b8; font-size:0.9rem; }
   .pagination-controls { display:flex; align-items:center; gap:8px; }
   .page-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:white; padding:8px; border-radius:6px; cursor:pointer; transition:all 0.2s ease; display:flex; align-items:center; justify-content:center; }
@@ -745,6 +747,17 @@ export class MoviesComponent implements OnInit, AfterViewInit, OnDestroy {
         const sub = filterChanges$.subscribe(() => this.applyFilters());
         this.subs.push(sub);
 
+        // ADD: dedicated subscription for queryControl to support search-as-you-type with debounce
+        const querySub = this.queryControl.valueChanges.pipe(
+            debounceTime(450),
+            distinctUntilChanged()
+        ).subscribe(() => {
+            // reset to page 1 for new query and load
+            this.currentPage.set(1);
+            this.loadMovies();
+        });
+        this.subs.push(querySub);
+
         this.loadMovies();
     }
 
@@ -847,6 +860,7 @@ export class MoviesComponent implements OnInit, AfterViewInit, OnDestroy {
             case 'primary_release_date.desc': return 'Newest';
             case 'vote_average.desc': return 'Top Rated';
             case 'vote_count.desc': return 'Most Voted';
+            case 'revenue.desc': return 'Box Office';
             default: return 'Popular';
         }
     }
@@ -1006,13 +1020,18 @@ export class MoviesComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private buildFilters(): MovieFilters {
         const v = this.form.getRawValue();
+
+        // FIX: keep genre_ids as an array (FormArray produces an array) and pass it through
+        // The service is responsible for converting array -> comma string when building params.
+        const genreIdsArr = (v.genre_ids && v.genre_ids.length) ? (Array.isArray(v.genre_ids) ? v.genre_ids : v.genre_ids.map(Number)) : undefined;
+
         return {
             query: v.query?.trim() || undefined,
             category: v.category || undefined,
             sort_by: v.sort_by,
             include_adult: v.include_adult,
             include_video: v.include_video,
-            genre_ids: (v.genre_ids && v.genre_ids.length) ? v.genre_ids.join(',') : undefined,
+            genre_ids: genreIdsArr,
             year: v.year || undefined,
             primary_release_date_gte: v.release_from ? this.formatDateParam(v.release_from) : undefined,
             primary_release_date_lte: v.release_to ? this.formatDateParam(v.release_to) : undefined,
@@ -1041,8 +1060,46 @@ export class MoviesComponent implements OnInit, AfterViewInit, OnDestroy {
         return `${yyyy}-${mm}-${dd}`;
     }
 
+    // --- Add this helper method inside MoviesComponent (near other helpers) ---
+    /** Return true if movie matches the client-side filters (a subset of discover filters) */
+    private movieMatchesFilters(movie: Movie, filters: MovieFilters): boolean {
+        if (!movie) return false;
+
+        // genre_ids: check intersection when provided
+        if (filters.genre_ids && filters.genre_ids.length) {
+            const movieGenreIds = (movie.genre_ids || movie.genres || []).map((g: any) => typeof g === 'number' ? g : g.id);
+            const hasAny = filters.genre_ids.some(id => movieGenreIds.includes(id));
+            if (!hasAny) return false;
+        }
+
+        // year: check release_date or first_air_date
+        if (filters.year) {
+            const dt = movie.release_date || '';
+            if (!dt || (new Date(dt)).getFullYear() !== Number(filters.year)) return false;
+        }
+
+        // min_rating / max_rating -> vote_average
+        if (filters.min_rating != null && filters.min_rating > 0) {
+            if ((movie.vote_average || 0) < Number(filters.min_rating)) return false;
+        }
+        if (filters.max_rating != null) {
+            if ((movie.vote_average || 0) > Number(filters.max_rating)) return false;
+        }
+
+        // language
+        if (filters.language) {
+            if ((movie.original_language || '').toLowerCase() !== (filters.language || '').toLowerCase()) return false;
+        }
+
+        // release_status, runtime, etc - these are often missing in search results so skip unless available
+        // For runtime filters, you would need to call movie details, which is heavy - omitted here.
+
+        return true;
+    }
+
+
+    // loadMovies now cancels in-flight requests and passes pageSize
     private loadMovies(): void {
-        // cancel any in-flight request
         if (this.currentRequestSub) {
             this.currentRequestSub.unsubscribe();
             this.currentRequestSub = null;
@@ -1052,25 +1109,31 @@ export class MoviesComponent implements OnInit, AfterViewInit, OnDestroy {
         const filters = this.buildFilters();
         const page = this.currentPage();
 
-        // If a free-text query exists, use the search endpoint instead of discover
+// inside loadMovies() where you handle filters.query
         if (filters.query) {
-            // For search, TMDB pages are fixed at 20 — compute tmdb page containing the UI page's first item
             const TMDB_PAGE_SIZE = 20;
             const tmdbPage = Math.floor(((page - 1) * this.pageSize) / TMDB_PAGE_SIZE) + 1;
-
             const obs$ = this.tmdb.searchMovies(filters.query!, tmdbPage);
 
             this.currentRequestSub = obs$.subscribe({
                 next: resp => {
-                    // resp.results are from the TMDB page 'tmdbPage' — we may need to slice if UI pageSize < TMDB page
-                    // compute local-start (index within the combined stream) and slice accordingly
-                    const offset = (page - 1) * this.pageSize; // 0-based idx in UI space
                     const tmdbStartIndex = ((tmdbPage - 1) * TMDB_PAGE_SIZE);
+                    const offset = (page - 1) * this.pageSize;
                     const localStart = Math.max(0, offset - tmdbStartIndex);
-                    const sliced = (resp.results || []).slice(localStart, localStart + this.pageSize);
 
+                    // Apply client-side filtering for discover-style filters
+                    // NOTE: this will only filter the current TMDB page results. For full correctness across all pages you'd need to fetch multiple TMDB pages
+                    const rawResults = (resp.results || []);
+                    const filteredResults = rawResults.filter(m => this.movieMatchesFilters(m, filters));
+
+                    // If the UI pageSize > TMDB page size we may need to fetch next tmdb page too (not handled here)
+                    const sliced = filteredResults.slice(localStart, localStart + this.pageSize);
+
+                    // Update UI
                     this.movies.set(sliced);
-                    this.totalResults.set(resp.total_results || 0);
+                    // Set totalResults to filteredResults.length for the currently fetched TMDB page
+                    // (If you need absolute total across ALL matching TMDB pages, you'd need additional requests)
+                    this.totalResults.set(filteredResults.length || (resp.total_results || 0));
                     this.isLoading.set(false);
                     this.updateUrl();
                     this.currentRequestSub = null;
@@ -1086,6 +1149,7 @@ export class MoviesComponent implements OnInit, AfterViewInit, OnDestroy {
 
             return;
         }
+
 
         // No query -> use discover (existing batched discoverMovies supports pageSize)
         const obs$ = this.tmdb.discoverMovies(filters, page, this.pageSize);
@@ -1108,9 +1172,8 @@ export class MoviesComponent implements OnInit, AfterViewInit, OnDestroy {
         });
     }
 
-
     applyFilters(): void {
-        if (this.isLoading()) return;
+        // REMOVED: early return when loading -- allow user to trigger search immediately.
         this.currentPage.set(1);
         this.loadMovies();
         this.advancedOpen = false;

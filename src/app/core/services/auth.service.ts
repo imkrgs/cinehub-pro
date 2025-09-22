@@ -23,7 +23,6 @@ export class AuthService {
   private readonly currentUserSubject = new BehaviorSubject<User | null>(null);
 
   // Public readonly signals
-  readonly currentUser = this._currentUser.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
   readonly authError = this._authError.asReadonly();
   readonly isAuthenticated = computed(() => !!this._currentUser());
@@ -41,6 +40,10 @@ export class AuthService {
 
   private readonly baseUrl = environment.api.baseUrl;
   private tokenRefreshTimer?: ReturnType<typeof setTimeout>;
+
+  isModalOpen = signal(false);
+  activeForm = signal<'signin'|'signup'|'reset'>('signin');
+  currentUser = signal<User|null>(null);
 
   constructor() {
     this.initializeAuth();
@@ -461,4 +464,22 @@ export class AuthService {
       this.toast.success(`Logged in as ${role}`);
     }
   }
+
+  open() { this.isModalOpen.set(true); }
+  close() { this.isModalOpen.set(false); }
+  switch(form: 'signin'|'signup'|'reset') { this.activeForm.set(form); }
+
+  reset(email: string) {
+    return this.http.post(`${this.baseUrl}/api/auth/reset`, { email });
+  }
+
+  setUser(u: User|null) {
+    this.currentUser.set(u);
+    if (u) this.safeSet('cinehub_user', JSON.stringify(u));
+    else this.safeRemove('cinehub_user');
+  }
+
+  private safeGet(key: string) { try { return localStorage.getItem(key); } catch { return null; } }
+  private safeSet(key: string, v: string) { try { localStorage.setItem(key, v); } catch {} }
+  private safeRemove(key: string) { try { localStorage.removeItem(key); } catch {} }
 }
